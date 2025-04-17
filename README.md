@@ -1,5 +1,6 @@
 # Street Teller - Site Selection web tool
-The Street Teller is a web application integrated with a large language model (LLM) that provides a data-driven methodology for site down-selection. Users can sort urban data based on their preferences, and the application identifies target clusters that align with those interests. After users select the clusters they wish to target, the application recursively recommends more granular clusters within the initial selections. This iterative process allows for progressively refined site down-selection. [Click Here to test Street Teller](https://siteteller.netlify.app/) 
+The Street Teller is a web application integrated with a large language model (LLM) that provides a data-driven methodology for site down-selection. Users can sort urban data based on their preferences, and the application identifies target clusters that align with those interests. After users select the clusters they wish to target, the application recursively recommends more granular clusters within the initial selections. This iterative process allows for progressively refined site down-selection. 
+[Click Here to test Street Teller](https://siteteller.netlify.app/) 
 ![site_teller_small](https://github.com/user-attachments/assets/630463c1-b97d-4f5d-8f4a-0338787c07ce)
 
 ## Decision Making Process in down-selecting clusters
@@ -13,3 +14,4 @@ The diagram below illustrates the process of preparing a database and developing
 ## Data Source
 - [State of New York | Open Data](https://data.ny.gov/)
 - [Census Bureau](https://www.census.gov/)
+- [Open Street Map](https://www.openstreetmap.org/#map=5/38.01/-95.84)
