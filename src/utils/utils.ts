@@ -1,4 +1,4 @@
-import { HealthcarePropertyName } from "../constants/geoJsonConstants";
+import { HealthcareProperties } from "../constants/geoJsonConstants";
 import { Section } from "../constants/sectionConstants";
 import {
   RGBA,
@@ -34,7 +34,7 @@ export function pathToSection(path: string): Section {
  * Get the bound corresponding to the attribute name.
  * @param attribute name of the attribute in search for the bound.
  */
-export function getBound(attribute: HealthcarePropertyName): MapBound {
+export function getBound(attribute: HealthcareProperties): MapBound {
   return mapAttributes.find((attr) => attr.name === attribute)!.bound;
 }
 
@@ -42,9 +42,7 @@ export function getBound(attribute: HealthcarePropertyName): MapBound {
  * Get the unit type corresponding to the attribute name.
  * @param attribute name of the attribute in search for the unit type.
  */
-export function getUnit(
-  attribute: HealthcarePropertyName
-): UnitType | undefined {
+export function getUnit(attribute: HealthcareProperties): UnitType | undefined {
   return mapAttributes.find((attr) => attr.name === attribute)?.unit;
 }
 
@@ -73,10 +71,27 @@ export function formatUnit(num: number, unit: UnitType): string {
 /**
  * Restore original value of the normalized number(0-1)
  * @param value value to be restored.
- * @param bound bound of the original value.
+ * @param attribute attribute name to be used for restoring.
  */
-export function unNormalize(value: number, bound: MapBound): number {
+export function unNormalize(
+  value: number,
+  attribute: HealthcareProperties
+): number {
+  const bound = getBound(attribute);
   return (bound.max - bound.min) * value;
+}
+
+/**
+ * Normalize the value to be between 0 and 1.
+ * @param value value to be normalized.
+ * @param attribute attribute name to be used for normalization.
+ */
+export function normalize(
+  value: number,
+  attribute: HealthcareProperties
+): number {
+  const bound = getBound(attribute);
+  return value / (bound.max - bound.min);
 }
 
 /**

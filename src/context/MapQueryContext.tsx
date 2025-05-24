@@ -1,15 +1,15 @@
 import { createContext, useState } from "react";
-import { HealthcareProperties } from "../constants/geoJsonConstants";
+import { TractProperties } from "../constants/geoJsonConstants";
 import { Position } from "geojson";
 
 type MapQueryContextProps = {
-  hoveredProperty: HealthcareProperties | undefined;
+  hoveredProperty: TractProperties | undefined;
   setHoveredProperty: React.Dispatch<
-    React.SetStateAction<HealthcareProperties | undefined>
+    React.SetStateAction<TractProperties | undefined>
   >;
-  selectedProperty: HealthcareProperties | undefined;
+  selectedProperty: TractProperties | undefined;
   setSelectedProperty: React.Dispatch<
-    React.SetStateAction<HealthcareProperties | undefined>
+    React.SetStateAction<TractProperties | undefined>
   >;
   selectedCluster: number | undefined;
   setSelectedCluster: React.Dispatch<React.SetStateAction<number | undefined>>;
@@ -44,10 +44,8 @@ export function MapQueryContextProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const [hoveredProperty, setHoveredProperty] =
-    useState<HealthcareProperties>();
-  const [selectedProperty, setSelectedProperty] =
-    useState<HealthcareProperties>();
+  const [hoveredProperty, setHoveredProperty] = useState<TractProperties>();
+  const [selectedProperty, setSelectedProperty] = useState<TractProperties>();
   const [selectedCluster, setSelectedCluster] = useState<number>();
   const [selectedClusterInfo, setSelectedClusterInfo] = useState<number>();
   const [selectedReport, setSelectedReport] = useState<number>();

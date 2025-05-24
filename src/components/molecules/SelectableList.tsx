@@ -1,44 +1,33 @@
 import styles from "./SelectableList.module.css";
-import { useContext, useEffect, useRef, useState } from "react";
-import { MapContext } from "../../context/MapContext";
-import { mapAttributes } from "../../constants/mapConstants";
-import * as mapbox from "../../services/mapbox";
-import { HealthcarePropertyName } from "../../constants/geoJsonConstants";
+import { useEffect, useRef, useState } from "react";
+import { HealthcareProperties } from "../../constants/geoJsonConstants";
 import useEffectAfterMount from "../../hooks/useEffectAfterMount";
 
 type SelectableListProps = {
-  list: { name: HealthcarePropertyName; id: string }[];
+  list: { name: HealthcareProperties; id: string }[];
+  onSelectItem?: (item: HealthcareProperties) => void;
 };
 
 /**
  * List component with selectable items associated with mapping.
+ * @param list - List of items to be displayed.
+ * @param onSelectItem - Callback function to be called when an item is selected.
  */
-export default function SelectableList({ list }: SelectableListProps) {
-  const [selectedItem, setSelectedItem] = useState<HealthcarePropertyName>(
+export default function SelectableList({
+  list,
+  onSelectItem,
+}: SelectableListProps) {
+  const [selectedItem, setSelectedItem] = useState<HealthcareProperties>(
     list[0].name
   );
-  const { mapViewer, parentLayer, color } = useContext(MapContext);
-  const { setAttribute } = useContext(MapContext);
 
   useEffect(() => {
     setSelectedItem(list[0].name);
   }, [list]);
 
   useEffectAfterMount(() => {
-    // Update Mapping with the selected item.
-    if (mapViewer && parentLayer && color) {
-      mapbox.updateLayerAttribute(parentLayer, selectedItem, color, mapViewer);
-    }
-    // Update the attribute for map legned.
-    if (setAttribute) {
-      const newAttribute = mapAttributes.find(
-        (attribute) => attribute.name === selectedItem
-      );
-      newAttribute
-        ? setAttribute(newAttribute)
-        : console.error("Attribute not found.");
-    }
-  }, [selectedItem, mapViewer, parentLayer, color, setAttribute]);
+    onSelectItem && onSelectItem(selectedItem);
+  }, [selectedItem]);
 
   const itemRefs = useRef<(HTMLLIElement | null)[]>([]);
 

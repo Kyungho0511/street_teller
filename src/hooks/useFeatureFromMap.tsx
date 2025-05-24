@@ -3,8 +3,8 @@ import { Cluster } from "../constants/surveyConstants";
 import { MapQueryContext } from "../context/MapQueryContext";
 import { Survey, SurveyContext } from "../context/SurveyContext";
 import {
+  TractProperties,
   HealthcareProperties,
-  HealthcarePropertyName,
 } from "../constants/geoJsonConstants";
 import useEffectAfterMount from "./useEffectAfterMount";
 
@@ -22,7 +22,7 @@ export default function useFeatureFromMap(clusterId: string) {
 
   // Helper function to get features for a property
   const getFeatures = (
-    property: HealthcareProperties | undefined
+    property: TractProperties | undefined
   ): Cluster[] | undefined => {
     if (!property) return;
 
@@ -32,7 +32,7 @@ export default function useFeatureFromMap(clusterId: string) {
       const clusterList = survey[clusterKey as keyof Survey];
       const cluster =
         clusterList.list[
-          property[clusterKey as HealthcarePropertyName] as number
+          property[clusterKey as HealthcareProperties] as number
         ];
       features.push(cluster as Cluster);
     }

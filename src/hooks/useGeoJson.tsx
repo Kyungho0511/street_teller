@@ -1,21 +1,22 @@
-import { useEffect, useState } from "react";
-import { HealthcareFeatureCollection } from "../constants/geoJsonConstants";
+import { useContext, useEffect, useState } from "react";
+import useEffectAfterMount from "./useEffectAfterMount";
+import { MapContext } from "../context/MapContext";
 
 /**
  * Custom hook to fetch geoJson data from the file path.
  * @param filePath File path of the geoJson data
- * @param run Boolean to fetch the data
+ * @param mapViewer Map instance to add the geoJson data
  */
-export default function useGeoJson(filePath: string, run: boolean) {
+export default function useGeoJson(
+  filePath: string,
+  mapViewer: mapboxgl.Map | undefined
+) {
   const [loadingGeoJson, setLoadingGeoJson] = useState<boolean>(false);
   const [errorGeoJson, setErrorGeoJson] = useState<string | undefined>();
-  const [geoJson, setGeoJson] = useState<
-    HealthcareFeatureCollection | undefined
-  >();
+  const { geoJson, setGeoJson } = useContext(MapContext);
 
+  // Fetch geoJson data from the file path.
   useEffect(() => {
-    if (!run) return;
-
     setLoadingGeoJson(true);
     setErrorGeoJson(undefined);
     if (!geoJson) {
@@ -36,5 +37,13 @@ export default function useGeoJson(filePath: string, run: boolean) {
     }
   }, []);
 
-  return [loadingGeoJson, errorGeoJson, geoJson, setGeoJson] as const;
+  useEffectAfterMount(() => {
+    if (!mapViewer || !geoJson) return;
+    // Add selected properties to geoJson data.
+    geoJson.features.forEach((feature) => {
+      feature.properties.selected = true;
+    });
+  }, [mapViewer, geoJson]);
+
+  return { loadingGeoJson, errorGeoJson };
 }

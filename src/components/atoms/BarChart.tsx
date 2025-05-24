@@ -2,10 +2,10 @@ import styles from "./BarChart.module.css";
 import { UnitType } from "../../constants/mapConstants";
 import * as utils from "../../utils/utils";
 import { useEffect, useState } from "react";
-import { HealthcarePropertyName } from "../../constants/geoJsonConstants";
+import { HealthcareProperties } from "../../constants/geoJsonConstants";
 
 type BarChartProps = {
-  label: HealthcarePropertyName;
+  label: HealthcareProperties;
   value: number;
   unit?: UnitType;
 };
@@ -19,8 +19,7 @@ export default function BarChart({ label, value, unit }: BarChartProps) {
   // Update the formatted value.
   useEffect(() => {
     if (!unit) return;
-    const bound = utils.getBound(label);
-    const rawValue = utils.unNormalize(value, bound);
+    const rawValue = utils.unNormalize(value, label);
     setformattedValue(utils.formatUnit(rawValue, unit));
   }, [value, unit, label]);
 

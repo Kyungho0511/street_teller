@@ -5,11 +5,13 @@ import {
   Location,
   MapAttribute,
 } from "../constants/mapConstants";
-import { sectionMapConfigs } from "../constants/sectionConstants";
+import { Section, sectionMapConfigs } from "../constants/sectionConstants";
 import MapViewer from "../components/organisms/MapViewer";
 import Map3dViewer from "../components/organisms/Map3dViewer";
 import * as Cesium from "cesium";
 import useSessionStorage from "../hooks/useSessionStorage";
+import { TractFeatureCollection } from "../constants/geoJsonConstants";
+import { GeoIdDictionary } from "../constants/surveyConstants";
 
 export type MapMode = "satellite" | "map";
 
@@ -34,20 +36,26 @@ type MapContextProps = {
   location: Location;
   setLocation: React.Dispatch<React.SetStateAction<Location>>;
   layers: Record<
-    string,
-    mapboxgl.LayerSpecification | mapboxgl.CustomLayerInterface
+    Section,
+    mapboxgl.LayerSpecification | mapboxgl.CustomLayerInterface | undefined
   >;
   setLayers: React.Dispatch<
     React.SetStateAction<
       Record<
-        string,
-        mapboxgl.LayerSpecification | mapboxgl.CustomLayerInterface
+        Section,
+        mapboxgl.LayerSpecification | mapboxgl.CustomLayerInterface | undefined
       >
     >
   >;
-  sources: Record<string, mapboxgl.SourceSpecification>;
-  setSources: React.Dispatch<
-    React.SetStateAction<Record<string, mapboxgl.SourceSpecification>>
+  geoJson: TractFeatureCollection | undefined;
+  setGeoJson: React.Dispatch<
+    React.SetStateAction<TractFeatureCollection | undefined>
+  >;
+  sourceLoaded: boolean;
+  setSourceLoaded: React.Dispatch<React.SetStateAction<boolean>>;
+  geoIdDictSet: Record<Section, GeoIdDictionary | undefined>;
+  setGeoIdDictSet: React.Dispatch<
+    React.SetStateAction<Record<Section, GeoIdDictionary | undefined>>
   >;
 };
 
@@ -69,11 +77,28 @@ export function MapContextProvider({
   const [map3dPreview, setMap3dPreview] = useState<Cesium.Viewer>();
   const [parentLayer, setParentLayer] = useState<string>("");
   const [layers, setLayers] = useSessionStorage<
-    Record<string, mapboxgl.LayerSpecification | mapboxgl.CustomLayerInterface>
-  >("layers", {});
-  const [sources, setSources] = useSessionStorage<
-    Record<string, mapboxgl.SourceSpecification>
-  >("sources", {});
+    Record<
+      Section,
+      mapboxgl.LayerSpecification | mapboxgl.CustomLayerInterface | undefined
+    >
+  >("layers", {
+    home: undefined,
+    cluster1: undefined,
+    cluster2: undefined,
+    cluster3: undefined,
+    report: undefined,
+  });
+  const [geoJson, setGeoJson] = useState<TractFeatureCollection>();
+  const [sourceLoaded, setSourceLoaded] = useState(false);
+  const [geoIdDictSet, setGeoIdDictSet] = useSessionStorage<
+    Record<Section, GeoIdDictionary | undefined>
+  >("geoIdDictionary", {
+    home: undefined,
+    cluster1: undefined,
+    cluster2: undefined,
+    cluster3: undefined,
+    report: undefined,
+  });
   const [location, setLocation] = useState<Location>(
     mapConfigs.location as Location
   );
@@ -111,8 +136,12 @@ export function MapContextProvider({
         setParentLayer,
         layers,
         setLayers,
-        sources,
-        setSources,
+        geoJson,
+        setGeoJson,
+        sourceLoaded,
+        setSourceLoaded,
+        geoIdDictSet,
+        setGeoIdDictSet,
         attribute,
         setAttribute,
         color,

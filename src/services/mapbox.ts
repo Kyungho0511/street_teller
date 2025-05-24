@@ -12,14 +12,15 @@ import {
   themeColor,
   RGBA,
   BEFORE_ID,
+  FILL_OUTLINE_COLOR,
 } from "../constants/mapConstants";
 import { sectionMapConfigs } from "../constants/sectionConstants";
 import { ClusterList } from "../constants/surveyConstants";
 import { Section } from "../constants/sectionConstants";
 import * as utils from "../utils/utils";
 import {
-  HealthcareFeatureCollection,
-  HealthcarePropertyName,
+  TractFeatureCollection,
+  HealthcareProperties,
 } from "../constants/geoJsonConstants";
 import { MapMode } from "../context/MapContext";
 
@@ -123,31 +124,23 @@ export function setLayerOpacity(layer: MapLayer, map: mapboxgl.Map): void {
 
 /**
  * Set layer settings based on the section.
- * @param section Each url path corresponds to a section.
+ * @param section Current page section in the application.
  * @param map Map in which layers are set.
  */
 export function setLayerSettings(section: Section, map: mapboxgl.Map): void {
-  // Exit if the section is not found.
   const mapSection = sectionMapConfigs.find((sec) => sec.id === section);
   if (!mapSection) return;
 
-  // Update layer opacity.
   offLayers(map);
   mapSection.layers.forEach((layer) => setLayerOpacity(layer, map));
-
-  // Home: Update layer style, adjusting the color interpolation.
-  if (section === "home") {
-    const name = mapSection.attribute!.name;
-    updateLayerAttribute(mapSection.parentLayer!, name, mapSection.color!, map);
-  }
 }
 
 /**
- * Update attribute of the mapbox layer to be drawn.
+ * Update a home layer color style on the mapbox map.
  */
-export function updateLayerAttribute(
+export function updateHomeLayer(
   layer: string,
-  attribute: HealthcarePropertyName,
+  attribute: HealthcareProperties,
   color: Color,
   map: mapboxgl.Map
 ) {
@@ -164,7 +157,7 @@ export function updateLayerAttribute(
 }
 
 /**
- * Update a k-means cluster layer color style on the mapbox map.
+ * Update a cluster layer color style on the mapbox map.
  * @param clusterId clustering iteration number.
  * @param clusterList Informs which clusters are selected.
  * @param map Map to which the layer is updated.
@@ -200,7 +193,7 @@ export function updateClusterLayer(
  */
 export function addReportLayer(
   name: string,
-  geoJson: HealthcareFeatureCollection,
+  geoJson: TractFeatureCollection,
   map: mapboxgl.Map
 ) {
   // Remove the layer if it already exists.
@@ -240,45 +233,85 @@ export function addReportLayer(
 }
 
 /**
- * Add a k-means cluster layer to the mapbox map.
+ * Add a source to the mapbox map.
  * @param geoJson GeoJson data to be added to the map.
+ * @param name Source name to be added to the map.
+ * @param map Map to which the source is added.
+ */
+export function addSource(
+  geoJson: TractFeatureCollection,
+  name: string,
+  map: mapboxgl.Map
+) {
+  if (map.getSource(name)) {
+    return;
+  }
+  map.addSource(name, {
+    type: "geojson",
+    data: geoJson,
+  });
+}
+
+/**
+ * Add a layer to the mapbox map.
+ * @param layerName Layer name to be added to the map.
+ * @param sourceName Source name to be used for the layer.
+ * @param map Map to which the layer is added.
+ */
+export function addHomeLayer(
+  layerName: string,
+  sourceName: string,
+  map: mapboxgl.Map
+) {
+  if (map.getLayer(layerName)) {
+    return;
+  }
+  map.addLayer(
+    {
+      id: layerName,
+      type: "fill",
+      source: sourceName,
+      paint: {
+        "fill-color": utils.rgbaToString(themeColor),
+        "fill-opacity": 1,
+        "fill-outline-color": FILL_OUTLINE_COLOR,
+      },
+    },
+    BEFORE_ID
+  );
+}
+
+/**
+ * Add a cluster layer to the mapbox map.
  * @param clusterList List of clusters to be added to the map.
+ * @param sourceName Source name to be used for the layer.
  * @param map Map to which the layer is added.
  */
 export function addClusterLayer(
-  geoJson: HealthcareFeatureCollection,
   clusterList: ClusterList,
+  sourceName: string,
   map: mapboxgl.Map
-): {
-  layer: mapboxgl.LayerSpecification | mapboxgl.CustomLayerInterface;
-  source: mapboxgl.SourceSpecification;
-} {
-  // Remove the layer if it already exists.
-  map.getSource(clusterList.name) && map.removeSource(clusterList.name);
-  map.getLayer(clusterList.name) && map.removeLayer(clusterList.name);
+) {
+  console.log("Adding cluster layer", clusterList.name);
 
-  // Add source and layer to the map.
-  const source: mapboxgl.SourceSpecification = {
-    type: "geojson",
-    data: geoJson,
-  };
-  map.addSource(clusterList.name, source);
-
+  if (map.getLayer(clusterList.name)) {
+    return;
+  }
   map.addLayer(
     {
       id: clusterList.name,
       type: "fill",
-      source: clusterList.name,
+      source: sourceName,
       paint: {
         "fill-color": [
           "case",
-          ["==", ["get", clusterList.name], 0],
+          ["all", ["==", ["get", clusterList.name], 0], ["get", "selected"]],
           utils.rgbaToString(clusterList.list[0].color),
-          ["==", ["get", clusterList.name], 1],
+          ["all", ["==", ["get", clusterList.name], 1], ["get", "selected"]],
           utils.rgbaToString(clusterList.list[1].color),
-          ["==", ["get", clusterList.name], 2],
+          ["all", ["==", ["get", clusterList.name], 2], ["get", "selected"]],
           utils.rgbaToString(clusterList.list[2].color),
-          ["==", ["get", clusterList.name], 3],
+          ["all", ["==", ["get", clusterList.name], 3], ["get", "selected"]],
           utils.rgbaToString(clusterList.list[3].color),
           transparent,
         ],
@@ -288,15 +321,10 @@ export function addClusterLayer(
     },
     BEFORE_ID
   );
-
-  return {
-    layer: map.getLayer(clusterList.name)!,
-    source,
-  };
 }
 
 /**
- * Remove a k-means cluster layer from the mapbox map.
+ * Remove a cluster layer from the mapbox map.
  * @param clusterList List of clusters to be removed.
  * @param map Map from which the layer is removed.
  */
@@ -309,7 +337,7 @@ export function removeClusterLayer(
   }
 }
 /**
- * Remove all k-means cluster layers from the mapbox map.
+ * Remove all cluster layers from the mapbox map.
  * @param clusterListCollection Collection of cluster lists to be removed.
  * @param map Map from which the layers are removed.
  */

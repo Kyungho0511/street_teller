@@ -5,7 +5,7 @@ import { FOOTBAR_HEIGHT } from "./Footbar";
 import { RGBA, POPUP } from "../../constants/mapConstants";
 import { isTransparent } from "../../utils/utils";
 import { MapQueryContext } from "../../context/MapQueryContext";
-import { HealthcareProperties } from "../../constants/geoJsonConstants";
+import { TractProperties } from "../../constants/geoJsonConstants";
 import { isActiveFeature } from "../../services/mapbox";
 
 type Coordinate = {
@@ -36,7 +36,7 @@ export default function PopupSection({ children }: PopupSectionProps) {
       const feature = mapViewer.queryRenderedFeatures(event.point, {
         layers: [parentLayer],
       })[0];
-      setHoveredProperty(feature.properties as HealthcareProperties);
+      setHoveredProperty(feature.properties as TractProperties);
     };
 
     const updateSelectedProperties = (event: mapboxgl.MapMouseEvent) => {
@@ -46,7 +46,7 @@ export default function PopupSection({ children }: PopupSectionProps) {
       const feature = mapViewer.queryRenderedFeatures(event.point, {
         layers: [parentLayer],
       })[0];
-      setSelectedProperty(feature.properties as HealthcareProperties);
+      setSelectedProperty(feature.properties as TractProperties);
     };
 
     mapViewer.on("mousemove", parentLayer, updateHoveredProperties);
